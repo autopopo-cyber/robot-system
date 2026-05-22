@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>exploration</name>
+  <version>0.1.0</version>
+  <description>Exploration engine for quadruped robot</description>
+  <maintainer email="qin@autopopo.cyber">Qin</maintainer>
+  <license>MIT</license>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>unitree_go</exec_depend>
+  <exec_depend>unitree_api</exec_depend>
+  <exec_depend>unitree_hg</exec_depend>
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
