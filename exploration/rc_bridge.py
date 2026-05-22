@@ -48,15 +48,52 @@ class RCBridge(Node):
         self.get_logger().info('DAMP')
 
 
+# ── HTTP REST 接口 ──────────────────────────────
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+
+
+class MoveHandler(BaseHTTPRequestHandler):
+    bridge = None
+
+    def do_POST(self):
+        if self.path != '/move':
+            self.send_error(404)
+            return
+        length = int(self.headers.get('Content-Length', 0))
+        body = self.rfile.read(length) if length else b'{}'
+        data = json.loads(body)
+        vx = float(data.get('vx', 0.0))
+        vy = float(data.get('vy', 0.0))
+        vyaw = float(data.get('vyaw', 0.0))
+        self.bridge.send_move(vx, vy, vyaw)
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({'ok': True, 'vx': vx, 'vy': vy, 'vyaw': vyaw}).encode())
+
+    def log_message(self, *args):
+        pass  # 静默HTTP日志
+
+
 def main():
     rclpy.init()
-    node = RCBridge()
+    bridge = RCBridge()
+
+    # HTTP server on port 8400
+    MoveHandler.bridge = bridge
+    server = HTTPServer(('0.0.0.0', 8400), MoveHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    bridge.get_logger().info('HTTP server on :8400/move')
+
     try:
-        rclpy.spin(node)
+        rclpy.spin(bridge)
     except KeyboardInterrupt:
         pass
     finally:
-        node.destroy_node()
+        server.shutdown()
+        bridge.destroy_node()
         rclpy.shutdown()
 
 
