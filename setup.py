@@ -15,4 +15,10 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
+    entry_points={
+        'console_scripts': [
+            'rc_bridge = exploration.rc_bridge:main',
+            'data_logger = exploration.data_logger:main',
+        ],
+    },
 )
