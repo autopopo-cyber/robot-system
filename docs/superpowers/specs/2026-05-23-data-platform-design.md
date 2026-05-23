@@ -16,40 +16,57 @@
 
 ```
 robot-system/
-├── rl_sar/                          ← git submodule (不动)
+├── README.md
+├── pyproject.toml
 │
-├── src/platform/                    ← 平台层（Python）
-│   ├── collector.py                 # 通用采集器入口
-│   ├── sources/
-│   │   ├── dds_source.py            # DDS订阅类型
-│   │   ├── rpc_source.py            # RPC轮询类型
-│   │   └── gstreamer_source.py      # GStreamer拉流类型
-│   ├── writers/
-│   │   ├── csv_writer.py
-│   │   ├── rosbag_writer.py
-│   │   └── jpeg_writer.py
-│   └── launcher.py                  # 一键启动
+├── src/robot_system/                ← Python 包
+│   ├── __init__.py
+│   ├── platform/                    # 平台层：通用数据采集
+│   │   ├── __init__.py
+│   │   ├── collector.py             # 采集器入口
+│   │   ├── config.py                # YAML 加载 + 验证
+│   │   ├── sources/
+│   │   │   ├── __init__.py
+│   │   │   ├── base.py              # Source 基类
+│   │   │   ├── dds.py               # DDS 订阅
+│   │   │   ├── rpc.py               # RPC 轮询
+│   │   │   └── gstreamer.py         # GStreamer 拉流
+│   │   └── writers/
+│   │       ├── __init__.py
+│   │       ├── csv.py
+│   │       └── image.py
+│   │
+│   └── robots/                      # 机器人配置（纯 YAML + 可选 adapter）
+│       ├── a2/
+│       │   ├── base.yaml
+│       │   ├── explore.yaml
+│       │   └── multimedia_test.yaml
+│       └── go2/
+│           └── base.yaml
 │
-├── robots/                          ← 机器人配置
-│   ├── a2/
-│   │   ├── base.yaml                # 基础参数
-│   │   ├── explore/config.yaml      # 探索场景
-│   │   ├── calibrate/config.yaml    # 标定场景
-│   │   └── multimedia_test/config.yaml
-│   └── go2/                         ← 未来
-│       └── base.yaml
+├── tests/                           # 单元测试
+│   ├── test_config.py
+│   ├── test_dds_source.py
+│   └── test_collector.py
 │
-├── tools/
+├── tools/                           # 离线工具
 │   ├── replay.py
 │   └── convert.py
 │
-└── verify/                          ← 已有验证脚本
+├── deploy/                          # 部署
+│   ├── install.sh
+│   └── systemd/collector.service
+│
+├── verify/                          # 实机验证脚本（已有）
+├── exploration/                     # 旧代码（迁移完成后删）
+├── docs/                            # 文档
+└── .gitignore
 ```
 
 **用法：**
 ```bash
-ros2 run platform collector --robot a2 --scene explore
-ros2 run platform collector --robot a2 --scene multimedia_test
+cd robot-system
+python -m robot_system.platform.collector --robot a2 --scene explore
 ```
 
 ## 3. config.yaml 规格

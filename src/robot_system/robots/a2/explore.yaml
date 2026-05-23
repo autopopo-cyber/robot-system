@@ -1,0 +1,42 @@
+robot:
+  name: a2
+  network_interface: eth0
+  unitree_class: a2
+
+scene: explore
+description: 探索场景 — 全量传感器采集
+output_dir: /home/unitree/exploration_data
+
+sources:
+  - name: lowstate
+    type: dds
+    topic: /lf/lowstate
+    msg_type: unitree_hg/msg/LowState
+    rate_hz: 50
+    fields:
+      - tick
+      - imu_state.rpy
+      - imu_state.gyroscope
+      - imu_state.accelerometer
+    output:
+      format: csv
+      file: /home/unitree/exploration_data/lowstate.csv
+
+  - name: jpeg_camera
+    type: rpc
+    service: video_client
+    method: GetImageSample
+    interval_sec: 3
+    output:
+      format: jpeg
+      dir: /home/unitree/exploration_data/images/
+
+  - name: lidar
+    type: dds
+    topic: rt/unitree/slam_lidar/points1
+    msg_type: sensor_msgs/msg/PointCloud2
+    rate_hz: 10
+    enabled: false
+    output:
+      format: rosbag
+      file: /home/unitree/exploration_data/lidar.bag

@@ -1,0 +1,18 @@
+robot:
+  name: a2
+  network_interface: eth0
+  unitree_class: a2
+
+scene: multimedia_test
+description: 测试摄像头/麦克风/喇叭
+output_dir: /tmp/multimedia_test
+
+sources:
+  - name: jpeg_camera
+    type: rpc
+    service: video_client
+    method: GetImageSample
+    interval_sec: 2
+    output:
+      format: jpeg
+      dir: /tmp/multimedia_test/images/

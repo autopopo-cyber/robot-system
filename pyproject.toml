@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robot-system"
+version = "0.1.0"
+description = "通用机器人数据采集平台 — 配置驱动、多机器人支持"
+requires-python = ">=3.10"
+
+[project.scripts]
+robot-collector = "robot_system.platform.collector:main"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]

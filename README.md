@@ -1,36 +1,50 @@
-# Robot System
+# robot-system
 
-通用机器人控制平台。向下对接多品牌机器人，向上统一机械臂/相机/雷达接口。
+通用机器人数据采集平台。**加新设备 = 写一个 YAML，代码零改动。**
 
-> 🚧 开发中 — A2只读验证阶段
+## 用法
+
+```bash
+pip install -e .
+python -m robot_system.platform.collector --robot a2 --scene explore
+```
 
 ## 架构
 
 ```
-platform/interfaces.py    ← 抽象接口 (RobotAdapter, PayloadAdapter)
-adapters/unitree_a2.py    ← 宇树A2 适配器 (ROS2 rclpy直连DDS)
-payload/                  ← 上装设备适配器 (机械臂/相机/雷达)
-apps/                     ← 上层应用
+src/robot_system/
+├── platform/        # 平台层：通用数据采集（DDS + RPC + GStreamer）
+│   ├── collector.py # 入口
+│   ├── config.py    # YAML 配置加载
+│   ├── sources/     # 数据源插件
+│   └── writers/     # 输出插件
+└── robots/          # 机器人配置（纯 YAML）
+    ├── a2/          # 宇树 A2
+    └── go2/         # 宇树 Go2
 ```
 
-## 快速开始
+## 支持的数据源
 
-```bash
-# 1. SSH 到狗
-ssh unitree@100.65.245.29
+| 类型 | 实现 | 例子 |
+|---|---|---|
+| `dds` | ROS2 subscriber | LowState、LiDAR |
+| `rpc` | Client 轮询 | JPEG拍照、麦克风 |
+| `gstreamer` | OpenCV+Gst | h264图传 |
 
-# 2. 运行适配器测试
-source /opt/ros/humble/setup.bash
-python3 adapters/unitree_a2.py
-```
+## 传感器状态（A2）
 
-## 开发铁律
+| 传感器 | 状态 |
+|---|---|
+| LowState (IMU+电机) | ✅ 已验证 |
+| 运动 API | ✅ 已验证 |
+| 摄像头 JPEG | ✅ Go2 兼容，待充电后测 |
+| h264 图传 | ✅ 待充电后测 |
+| 麦克风/喇叭 | ✅ A2 自有 DDS 接口 |
+| LiDAR | ❌ 待宇树 OTA |
 
-- ❌ 严禁调用运动API (sport/loco/move)
-- ✅ 只读订阅状态 (sportmodestate/lowstate/bmsstate)
-- ✅ rclpy直通DDS，不编译unitree_sdk2
+## 目录
 
-## 文档
-
-- [A2 SDK 手册](docs/ROBOT_SDK.md)
-- [宇树官方文档](https://support.unitree.com/home/zh/developer)
+- `docs/` — 设计文档、实现计划
+- `verify/` — 实机验证脚本
+- `tools/` — 离线工具
+- `deploy/` — 部署脚本

@@ -1,0 +1,5 @@
+# A2 基础参数
+robot:
+  name: a2
+  network_interface: eth0
+  unitree_class: a2

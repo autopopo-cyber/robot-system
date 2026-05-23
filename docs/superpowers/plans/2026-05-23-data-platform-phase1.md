@@ -14,7 +14,7 @@
 
 ```
 robot-system/
-├── src/platform/
+├── src/robot_system/platform/
 │   ├── __init__.py
 │   ├── collector.py         # 主入口
 │   ├── config_loader.py     # YAML加载+验证
@@ -44,18 +44,18 @@ robot-system/
 
 ### Task 1: 平台包骨架
 
-**Objective:** 建立 `src/platform/` 包结构
+**Objective:** 建立 `src/robot_system/platform/` 包结构
 
 **Files:**
-- Create: `src/platform/__init__.py`
-- Create: `src/platform/sources/__init__.py`
-- Create: `src/platform/sources/base.py`
-- Create: `src/platform/writers/__init__.py`
+- Create: `src/robot_system/platform/__init__.py`
+- Create: `src/robot_system/platform/sources/__init__.py`
+- Create: `src/robot_system/platform/sources/base.py`
+- Create: `src/robot_system/platform/writers/__init__.py`
 
 **Step 1: 写 base.py（Source 基类）**
 
 ```python
-# src/platform/sources/base.py
+# src/robot_system/platform/sources/base.py
 """数据源基类"""
 
 class SourceBase:
@@ -79,7 +79,7 @@ class SourceBase:
 
 ```bash
 cd ~/workspace/robot-system
-python3 -c "from src.platform.sources.base import SourceBase; print('OK')"
+python3 -c "from robot_system.platform.sources.base import SourceBase; print('OK')"
 ```
 
 预期: `OK`
@@ -91,10 +91,10 @@ python3 -c "from src.platform.sources.base import SourceBase; print('OK')"
 **Objective:** YAML config 加载 + 结构验证
 
 **Files:**
-- Create: `src/platform/config_loader.py`
+- Create: `src/robot_system/platform/config_loader.py`
 - Create: `tests/test_config_loader.py`
-- Create: `robots/a2/base.yaml` (最小)
-- Create: `robots/a2/explore/config.yaml` (最小)
+- Create: `src/robot_system/robots/a2/base.yaml` (最小)
+- Create: `src/robot_system/robots/a2/explore/config.yaml` (最小)
 
 **Step 1: 写测试（先失败）**
 
@@ -123,7 +123,7 @@ output_dir: /tmp/test
 sources: []
 """
         path = self._write('config.yaml', yaml)
-        from src.platform.config_loader import load_config
+        from robot_system.platform.config_loader import load_config
         cfg = load_config(path)
         self.assertEqual(cfg['robot']['name'], 'test_bot')
         self.assertEqual(cfg['scene'], 'test')
@@ -136,7 +136,7 @@ output_dir: /tmp/test
 sources: []
 """
         path = self._write('config.yaml', yaml)
-        from src.platform.config_loader import load_config
+        from robot_system.platform.config_loader import load_config
         with self.assertRaises(ValueError):
             load_config(path)
 
@@ -154,7 +154,7 @@ cd ~/workspace/robot-system && python3 -m pytest tests/test_config_loader.py -v
 **Step 3: 写 config_loader.py**
 
 ```python
-# src/platform/config_loader.py
+# src/robot_system/platform/config_loader.py
 """YAML配置加载 + 验证"""
 import yaml
 
@@ -181,7 +181,7 @@ cd ~/workspace/robot-system && python3 -m pytest tests/test_config_loader.py -v
 **Step 5: 写最简 base.yaml 和 explore/config.yaml**
 
 ```yaml
-# robots/a2/base.yaml
+# src/robot_system/robots/a2/base.yaml
 robot:
   name: a2
   network_interface: eth0
@@ -189,7 +189,7 @@ robot:
 ```
 
 ```yaml
-# robots/a2/explore/config.yaml
+# src/robot_system/robots/a2/explore/config.yaml
 robot:
   name: a2
 scene: explore
@@ -200,7 +200,7 @@ sources: []
 **Step 6: Commit**
 
 ```bash
-git add src/platform/ robots/a2/ tests/
+git add src/robot_system/platform/ src/robot_system/robots/a2/ tests/
 git commit -m "feat: config_loader + base.yaml + explore/config.yaml"
 ```
 
@@ -211,10 +211,10 @@ git commit -m "feat: config_loader + base.yaml + explore/config.yaml"
 **Objective:** 通用 CSV 输出，支持动态列
 
 **Files:**
-- Create: `src/platform/writers/csv_writer.py`
+- Create: `src/robot_system/platform/writers/csv_writer.py`
 
 ```python
-# src/platform/writers/csv_writer.py
+# src/robot_system/platform/writers/csv_writer.py
 """CSV Writer"""
 import csv
 import os
@@ -240,7 +240,7 @@ class CSVWriter:
 ```bash
 cd ~/workspace/robot-system
 python3 -c "
-from src.platform.writers.csv_writer import CSVWriter
+from robot_system.platform.writers.csv_writer import CSVWriter
 w = CSVWriter('/tmp/test.csv', ['x','y'])
 w.write(1000, [1.0, 2.0])
 w.close()
@@ -256,7 +256,7 @@ print('OK')
 **Commit:**
 
 ```bash
-git add src/platform/writers/
+git add src/robot_system/platform/writers/
 git commit -m "feat: CSV writer"
 ```
 
@@ -267,13 +267,13 @@ git commit -m "feat: CSV writer"
 **Objective:** 把 verify_lowstate.py 的逻辑抽象成通用 dds_source.py，读 config 的 fields 动态订阅
 
 **Files:**
-- Create: `src/platform/sources/dds_source.py`
+- Create: `src/robot_system/platform/sources/dds_source.py`
 - Create: `tests/test_dds_source.py`
 
 **Step 1: 写 dds_source.py**
 
 ```python
-# src/platform/sources/dds_source.py
+# src/robot_system/platform/sources/dds_source.py
 """DDS订阅数据源"""
 import rclpy
 from rclpy.node import Node
@@ -333,7 +333,7 @@ import unittest
 
 class TestDDSSource(unittest.TestCase):
     def test_resolve_simple(self):
-        from src.platform.sources.dds_source import _resolve_field
+        from robot_system.platform.sources.dds_source import _resolve_field
         class Obj:
             pass
         obj = Obj()
@@ -343,7 +343,7 @@ class TestDDSSource(unittest.TestCase):
         self.assertEqual(result, 42)
 
     def test_msg_type_lowstate(self):
-        from src.platform.sources.dds_source import _get_msg_class
+        from robot_system.platform.sources.dds_source import _get_msg_class
         cls = _get_msg_class('unitree_hg/msg/LowState')
         self.assertEqual(cls.__name__, 'LowState')
 
@@ -367,16 +367,16 @@ cd ~/workspace/robot-system && python3 -m pytest tests/test_dds_source.py -v
 **Objective:** 读 config → 初始化 source → 配 writer → spin
 
 **Files:**
-- Create: `src/platform/collector.py`
+- Create: `src/robot_system/platform/collector.py`
 
 ```python
 #!/usr/bin/env python3
 """通用数据采集器 — 读config → 初始化sources → spin"""
 import rclpy
 import argparse
-from src.platform.config_loader import load_config
-from src.platform.writers.csv_writer import CSVWriter
-from src.platform.sources.dds_source import DDSSource
+from robot_system.platform.config_loader import load_config
+from robot_system.platform.writers.csv_writer import CSVWriter
+from robot_system.platform.sources.dds_source import DDSSource
 
 def main():
     parser = argparse.ArgumentParser()
@@ -431,7 +431,7 @@ if __name__ == '__main__':
 **Step 1: 验证语法**
 
 ```bash
-python3 -m py_compile src/platform/collector.py
+python3 -m py_compile src/robot_system/platform/collector.py
 ```
 
 **Step 2: Commit**
@@ -443,7 +443,7 @@ python3 -m py_compile src/platform/collector.py
 **Objective:** 写真正的 explore/config.yaml，包含 LowState 采集
 
 **Files:**
-- Modify: `robots/a2/explore/config.yaml`
+- Modify: `src/robot_system/robots/a2/explore/config.yaml`
 
 ```yaml
 robot:
@@ -495,7 +495,7 @@ sources:
 **Commit:**
 
 ```bash
-git add robots/a2/explore/config.yaml
+git add src/robot_system/robots/a2/explore/config.yaml
 git commit -m "feat: A2 explore config — LowState+LiDAR+camera"
 ```
 
@@ -509,7 +509,7 @@ git commit -m "feat: A2 explore config — LowState+LiDAR+camera"
 
 ```bash
 cd ~/workspace/robot-system
-tar czf /tmp/platform.tar.gz src/platform/ robots/a2/
+tar czf /tmp/platform.tar.gz src/robot_system/platform/ src/robot_system/robots/a2/
 sshpass -p 'Unitree#24226' scp /tmp/platform.tar.gz unitree@100.65.245.29:/tmp/
 ssh unitree@100.65.245.29 "cd ~/robot-system && tar xzf /tmp/platform.tar.gz"
 ```
@@ -520,7 +520,7 @@ ssh unitree@100.65.245.29 "cd ~/robot-system && tar xzf /tmp/platform.tar.gz"
 ssh unitree@100.65.245.29
 cd ~/robot-system
 source /opt/ros/humble/setup.bash
-python3 src/platform/collector.py --robot a2 --scene explore
+python3 src/robot_system/platform/collector.py --robot a2 --scene explore
 ```
 
 **Step 3: 验证输出**
