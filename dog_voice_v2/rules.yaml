@@ -1,0 +1,22 @@
+# A2 狗本地 NLU 规则
+# 修改后无需重启（每次 match 重新加载）
+
+local:
+  - keywords: ["坐下", "sit", "停", "stop"]
+    action: damp
+    reply_wav: "stop.wav"
+
+  - keywords: ["过来", "come", "来", "过来这里"]
+    action: come_forward
+    reply_wav: "coming.wav"
+
+  - keywords: ["趴下", "down", "趴", "躺下"]
+    action: stand_down
+    reply_wav: "down.wav"
+
+  - keywords: ["你好", "hello", "hi", "俊秀"]
+    action: null
+    reply_wav: "zaijia.wav"
+
+safety_on_cloud: stand_down
+cloud_timeout: 30
